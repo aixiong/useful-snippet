@@ -1,0 +1,4 @@
+﻿  callback.cpp
+d:\c++useful\useful-snippet\callback\callback\callback.cpp(85): warning C4101: “a”: 未引用的局部变量
+  callback.vcxproj -> D:\C++useful\useful-snippet\callback\Debug\callback.exe
+  callback.vcxproj -> D:\C++useful\useful-snippet\callback\Debug\callback.pdb (Partial PDB)
