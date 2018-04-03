@@ -1,0 +1,6 @@
+﻿  final class.cpp
+d:\c++useful\useful-snippet\final class\final class\final class.cpp(14): warning C4594: 决不可实例化类“B” - 不可访问间接虚拟基类“unInherited<A>”
+  “D:\VS2017\VC\Tools\MSVC\14.10.25017\bin\HostX86\x86\CL.exe”中的内部编译器错误
+    请选择 Visual C++ 
+  “帮助”菜单上的“技术支持”命令，或打开技术支持帮助文件来获得详细信息
+D:\VS2017\Common7\IDE\VC\VCTargets\Microsoft.CppCommon.targets(358,5): error MSB6006: “CL.exe”已退出，代码为 2。
