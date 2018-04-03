@@ -25,11 +25,14 @@ private:
 	printer(){}
 	printer(const printer& rhs){}
 };
+template<>
+const size_t Counted<printer>::maxObjects = 2;
 
 int main()
 {
 	shared_ptr<printer> sp(printer::makePrinter());
 	cout << sp->objectCount();
+	shared_ptr<printer> sp1(printer::makePrinter());
 	system("pause");
     return 0;
 }

@@ -16,7 +16,7 @@ protected:
 	~Counted() { --numObjects; }
 private:
 	static size_t numObjects;
-	static const size_t maxObjects = 1;
+	static const size_t maxObjects;
 	void init();
 };
 
