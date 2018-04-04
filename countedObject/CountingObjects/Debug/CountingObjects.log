@@ -1,0 +1,5 @@
+﻿  CountingObjects.cpp
+d:\c++useful\useful-snippet\countedobject\countingobjects\countingobjects.cpp(51): error C2668: “A2::func”: 对重载函数的调用不明确
+  d:\c++useful\useful-snippet\countedobject\countingobjects\countingobjects.cpp(37): note: 可能是“void A2::func(void)”
+  d:\c++useful\useful-snippet\countedobject\countingobjects\countingobjects.cpp(30): note: 或    “void A1::func(void)”
+  d:\c++useful\useful-snippet\countedobject\countingobjects\countingobjects.cpp(51): note: 尝试匹配参数列表“()”时
