@@ -1,3 +1,4 @@
 ﻿  AVLTree-learn.cpp
+d:\c++useful\useful-snippet\avltree-learn\avltree-learn\avltree.h(170): warning C4715: “xhy::avl_tree<int,std::less<int>,std::allocator>::balance”: 不是所有的控件路径都返回值
   AVLTree-learn.vcxproj -> D:\C++useful\useful-snippet\AVLTree-learn\Debug\AVLTree-learn.exe
   AVLTree-learn.vcxproj -> D:\C++useful\useful-snippet\AVLTree-learn\Debug\AVLTree-learn.pdb (Partial PDB)

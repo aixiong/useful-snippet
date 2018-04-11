@@ -10,6 +10,7 @@ namespace xhy
 		typedef __avl_tree_node_base* base_ptr;
 		typedef size_t height_type;
 		__avl_tree_node_base():left(nullptr),right(nullptr),height(1){}
+		virtual ~__avl_tree_node_base() = 0{}
 		base_ptr left;
 		base_ptr right;
 		height_type height;
@@ -32,18 +33,14 @@ namespace xhy
 		Value value_field;
 	};
 
-	template<typename Key, typename Value, typename KeyOfValue, typename Compare,
-		template<typename> class Alloc = std::allocator>
+	template<typename Value,  typename Compare,template<typename> class Alloc = std::allocator>
 		class avl_tree
 	{
 	protected:
-		typedef void* void_pointer;
 		typedef __avl_tree_node_base* base_ptr;
 		typedef __avl_tree_node<Value> avl_tree_node;
 		typedef std::allocator<avl_tree_node> avl_tree_node_allocator;
-		avl_tree_node_allocator alloc;
 	public:
-		typedef Key key_type;
 		typedef Value value_type;
 		typedef Value* pointer;
 		typedef const Value* const_pointer;
@@ -77,56 +74,76 @@ namespace xhy
 		}
 		void destroy_node(link_type p)
 		{
-			destroy_node(&p->value_field);
+			alloc.destroy(&p->value_field);
 			put_node(p);
 		}
 	protected:
 		link_type root;
 		size_type node_count;
 		Compare key_compare;
-	public:
-		void print(link_type x)
-		{
-			if (x == nullptr)return;
-			cout << x->value_field << " ";
-			print((link_type)x->left);
-			print((link_type)x->right);
-		}
+		avl_tree_node_allocator alloc;
 	private:
 		size_type getHeight(base_ptr x)
 		{
 			if (x == nullptr)return 0;
 			else return x->height;
 		}
-		size_type getBalance(link_type x);
-		link_type balance(link_type x);
-		link_type rightRotate(link_type x);
-		link_type leftRotate(link_type x);
-		link_type __insert(link_type x, const value_type& v,link_type& pos);
-		bool __remove(base_ptr x, const value_type& v);
+		size_type getBalance(base_ptr x)
+		{
+			return getHeight(x->left) - getHeight(x->right);
+		}
+		base_ptr balance(base_ptr x_);
+		base_ptr rightRotate(base_ptr x_);
+		base_ptr leftRotate(base_ptr x_);
+		base_ptr __insert(base_ptr x_, const value_type& v,link_type& pos);
+		base_ptr __remove(base_ptr x_, const value_type& v,bool& found);
+		base_ptr __search(base_ptr x_,const value_type& v);
+		void clear(base_ptr x_)
+		{
+			link_type x = (link_type)x_;
+			if (x->left)clear(x->left);
+			if (x->right)clear(x->right);
+			destroy_node(x);
+		}
 	public:
 		avl_tree():root(nullptr),node_count(0){}
+		~avl_tree()
+		{
+			if (root)clear(root);
+		}
 		link_type insert(const value_type& v);
 		bool remove(const value_type& v);
+		link_type search(const value_type& v);
+	private:
+		//test
+		void print(base_ptr x_)
+		{
+			link_type x = (link_type)x_;
+			std::cout << x->value_field << " ";
+			if(x->left)print(x->left);
+			if(x->right)print(x->right);
+		}
+	public:
+		//test
+		void print()
+		{
+			if (root != nullptr)
+			{
+				print(root);
+			}
+		}
 	};
 	
-
-	template<typename Key, typename Value, typename KeyOfValue, typename Compare, template<typename> class Alloc>
-	inline typename avl_tree<Key, Value, KeyOfValue, Compare, Alloc>::size_type 
-		avl_tree<Key, Value, KeyOfValue, Compare, Alloc>::getBalance(link_type x)
+	template<typename Value, typename Compare, template<typename> class Alloc>
+	typename avl_tree<Value,Compare, Alloc>::base_ptr
+		avl_tree<Value,Compare, Alloc>::balance(base_ptr x)
 	{
-		return getHeight(x->left) - getHeight(x->r);
-	}
-
-	template<typename Key, typename Value, typename KeyOfValue, typename Compare, template<typename> class Alloc>
-	typename avl_tree<Key, Value, KeyOfValue, Compare, Alloc>::link_type 
-		avl_tree<Key, Value, KeyOfValue, Compare, Alloc>::balance(link_type x)
-	{
+		
 		size_type diff = getBalance(x);
 		if (diff<= 1 && diff>=-1)return x;
 		if (diff >1)
 		{
-			link_type y = (link_type)x->left;
+			base_ptr y = x->left;
 			if (getHeight(y->left) > getHeight(y->right))
 			{
 				return rightRotate(x);
@@ -139,7 +156,7 @@ namespace xhy
 		}
 		else if (diff < -1)
 		{
-			link_type y =(link_type) x->right;
+			base_ptr y = x->right;
 			if (getHeight(y->right) > getHeight(y->left))
 			{
 				return leftRotate(x);
@@ -152,12 +169,12 @@ namespace xhy
 		}
 	}
 
-	template<typename Key, typename Value, typename KeyOfValue, typename Compare, template<typename> class Alloc>
-	typename avl_tree<Key, Value, KeyOfValue, Compare, Alloc>::link_type 
-		avl_tree<Key, Value, KeyOfValue, Compare, Alloc>::rightRotate(link_type x)
+	template<typename Value, typename Compare, template<typename> class Alloc>
+	typename avl_tree<Value,Compare, Alloc>::base_ptr 
+		avl_tree<Value,Compare, Alloc>::rightRotate(base_ptr x)
 	{
-		link_type y = (link_type)x->left;
-		link_type z = (link_type)y->left;
+		base_ptr y = x->left;
+		base_ptr z = y->right;
 		x->left = z;
 		y->right = x;
 		x->height = std::max(getHeight(z), getHeight(x->right)) + 1;
@@ -165,12 +182,12 @@ namespace xhy
 		return y;
 	}
 
-	template<typename Key, typename Value, typename KeyOfValue, typename Compare, template<typename> class Alloc>
-	typename avl_tree<Key, Value, KeyOfValue, Compare, Alloc>::link_type 
-		avl_tree<Key, Value, KeyOfValue, Compare, Alloc>::leftRotate(link_type y)
+	template<typename Value, typename Compare, template<typename> class Alloc>
+	typename avl_tree<Value,Compare, Alloc>::base_ptr
+		avl_tree<Value,Compare, Alloc>::leftRotate(base_ptr y)
 	{
-		link_type x = (link_type)y->right;
-		link_type z = (link_type)x->left;
+		base_ptr x = y->right;
+		base_ptr z = x->left;
 		y->right = z;
 		x->left = y;
 		y->height = std::max(getHeight(z), getHeight(y->left)) + 1;
@@ -178,59 +195,116 @@ namespace xhy
 		return x;
 	}
 
-	template<typename Key, typename Value, typename KeyOfValue, typename Compare, template<typename> class Alloc>
-	typename avl_tree<Key, Value, KeyOfValue, Compare, Alloc>::link_type 
-		avl_tree<Key, Value, KeyOfValue, Compare, Alloc>::__insert(link_type x, const value_type & v,link_type& pos)
+	template<typename Value, typename Compare, template<typename> class Alloc>
+	typename avl_tree<Value,Compare, Alloc>::base_ptr
+		avl_tree<Value,Compare, Alloc>::__insert(base_ptr x_, const value_type & v,link_type& pos)
 	{
-		if (x == nullptr)
+		if (x_ == nullptr)
 		{
 			pos= create_node(v);
 			return pos;
 		}
-		link_type xl = link_type(x->left);
-		link_type xr = link_type(x->right);
+		link_type x = (link_type)x_;
 		if (v <x->value_field)
 		{
-			x->left = __insert(xl, v,pos);
+			x->left = __insert(x->left, v,pos);
 		}
 		else if (v > x->value_field)
 		{
-			x->right= __insert(xr, v,pos);
+			x->right= __insert(x->right, v,pos);
 		}
 		if (pos != nullptr)
 		{
 			x->height = std::max(getHeight(x->left), getHeight(x->right)) + 1;
-			x=balance(x);
+			x=(link_type)balance(x);
 		}
 		return x;
 
 	}
 
-	template<typename Key, typename Value, typename KeyOfValue, typename Compare, template<typename> class Alloc>
-	bool avl_tree<Key, Value, KeyOfValue, Compare, Alloc>::__remove(base_ptr x, const value_type & v)
+	template<typename Value, typename Compare, template<typename> class Alloc>
+	typename avl_tree<Value,Compare, Alloc>::base_ptr
+		avl_tree<Value,Compare, Alloc>::__remove(base_ptr x_, const value_type & v,bool& found)
 	{
+		if (x_ == nullptr)
+		{
+			return nullptr;
+		}
+		link_type x = (link_type)x_;
+		if (x->value_field == v)
+		{
+			if (x->left == nullptr || x->right == nullptr)
+			{
+				found = true;
+				return x->left ? x->left : x->right;
+			}
+			else
+			{
+				link_type z = (link_type)x->right->minimum(x->right);
+				swap(x->value_field, z->value_field);
+				x->right = __remove(x->right, v, found);
+			}
+		}
+		else if (x->value_field < v)
+		{
+			x->right = __remove(x->right, v, found);
+		}
+		else
+		{
+			x->left = __remove(x->left, v, found);
+		}
+		if (found)
+		{
+			x->height = std::max(getHeight(x->left), getHeight(x->right)) + 1;
+			x=(link_type)balance(x);
+		}
+		return x;
 	}
 
-	template<typename Key, typename Value, typename KeyOfValue, typename Compare, template<typename> class Alloc>
-	typename avl_tree<Key, Value, KeyOfValue, Compare, Alloc>::link_type
-		avl_tree<Key, Value, KeyOfValue, Compare, Alloc>::insert(const value_type & v)
+	template<typename Value, typename Compare, template<typename> class Alloc>
+	typename avl_tree<Value,Compare, Alloc>::base_ptr
+		avl_tree<Value,Compare, Alloc>::__search(base_ptr x_, const value_type & v)
+	{
+		if (x_ == nullptr)return x_;
+		link_type x = (link_type)x_;
+		if (x->value_field == v)return x;
+	    base_ptr ans = nullptr;
+		if (x->value_field < v)
+		{
+			ans= __search(x->right, v);
+		}
+		else
+		{
+			ans= __search(x->left, v);
+		}
+		return ans;
+	}
+	template<typename Value, typename Compare, template<typename> class Alloc>
+	typename avl_tree<Value,Compare, Alloc>::link_type
+		avl_tree<Value,Compare, Alloc>::insert(const value_type & v)
 	{
 		link_type ans = nullptr;
-		root=__insert(root,v,ans);
-		print(root);
-		std::cout << std::endl;
+		root=(link_type)__insert(root,v,ans);
 		return ans;
 	}
 
-	template<typename Key, typename Value, typename KeyOfValue, typename Compare, template<typename> class Alloc>
-	bool avl_tree<Key, Value, KeyOfValue, Compare, Alloc>::remove(const value_type & v)
+	template<typename Value, typename Compare, template<typename> class Alloc>
+	bool avl_tree<Value,Compare, Alloc>::remove(const value_type & v)
 	{
-		return false;
+		bool found = false;
+		root =(link_type) __remove(root, v,found);
+		return found;
+	}
+
+	template<typename Value, typename Compare, template<typename> class Alloc>
+	typename avl_tree<Value,Compare, Alloc>::link_type
+		avl_tree<Value,Compare, Alloc>::search(const value_type & v)
+	{
+		return (link_type)__search(root, v);
 	}
 
 
-
 	template<typename Value,template<typename>class Alloc=std::allocator>
-	using simple_avlTree = avl_tree<Value, Value, void, std::less<Value>,Alloc>;
+	using simple_avlTree = avl_tree<Value,std::less<Value>,Alloc>;
 
 }
